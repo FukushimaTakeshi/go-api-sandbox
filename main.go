@@ -1,17 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func main() {
-	http.HandleFunc("/a", handler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
+	router := httprouter.New()
+	router.GET("/", Logging(Index, "index"))
+	router.GET("/todos", Logging(TodoIndex, "todo-index"))
+	router.GET("/todos/:todoId", Logging(TodoShow, "todo-show"))
+	router.POST("/todos", Logging(TodoCreate, "todo-create"))
+	router.DELETE("/todos/:todoId", Logging(TodoDelete, "todo-delete"))
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello World")
-
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
