@@ -4,18 +4,17 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/julienschmidt/httprouter"
 )
 
-var logger = func(method, uri, name string, start time.Time) {
-	log.Printf("\"method\":%q  \"uri\":%q  \"name\":%q  \"time\":%q", method, uri, name, time.Since(start))
+var logger = func(method, uri, name string, status int, start time.Time) {
+	log.Printf("\"method\":%q  \"uri\":%q    \"name\":%q   \"status\":%d \"time\":%q", method, uri, name, status, time.Since(start))
 }
 
-func Logging(h httprouter.Handle, name string) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func Logging(h func(r *http.Request) Response, name string) MyHandle {
+	return func(r *http.Request) Response {
 		start := time.Now()
-		h(w, r, ps)
-		logger(r.Method, r.URL.Path, name, start)
+		result := h(r)
+		logger(r.Method, r.URL.Path, name, result.Status(), start)
+		return result
 	}
 }
